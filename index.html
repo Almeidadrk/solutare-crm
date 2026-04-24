@@ -197,57 +197,123 @@ tr:hover td{background:#fafaf9}
 
 <!-- SIMULADOR -->
 <div class="pg" id="pg-sim">
-  <div class="ph"><div class="ph-l"><div class="pt">Simulador Solar</div><div class="ps">Dimensione sistemas e gere propostas automaticamente</div></div></div>
+  <div class="ph"><div class="ph-l"><div class="pt">Simulador Solar</div><div class="ps">Preencha os dados do kit e do cliente — a precificação é calculada automaticamente</div></div></div>
   <div id="sim-notif" class="notif notif-ok"></div>
-  <div class="sim">
-    <div class="card">
-      <div class="sec-t" style="margin-bottom:16px">Dados do Consumo</div>
-      <div class="fmg"><label class="flb">Nome do Cliente *</label><input class="fi" id="s-nome" placeholder="Ex: João Silva"></div>
-      <div class="fmg"><label class="flb">Cidade *</label><input class="fi" id="s-cidade" placeholder="Ex: Salvador"></div>
-      <div class="g2">
-        <div class="fmg"><label class="flb">Telefone</label><input class="fi" id="s-tel" placeholder="(75) 9 0000-0000"></div>
-        <div class="fmg"><label class="flb">E-mail</label><input class="fi" id="s-email" placeholder="email@ex.com"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <!-- COLUNA ESQUERDA: FORMULÁRIO -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Dados do Cliente -->
+      <div class="card">
+        <div class="sec-t" style="margin-bottom:14px">👤 Dados do Cliente</div>
+        <div class="fmg"><label class="flb">Nome do Cliente *</label><input class="fi" id="s-nome" placeholder="Ex: João Silva"></div>
+        <div class="fmg"><label class="flb">Cidade *</label><input class="fi" id="s-cidade" placeholder="Ex: Salvador – BA"></div>
+        <div class="g2">
+          <div class="fmg"><label class="flb">Telefone</label><input class="fi" id="s-tel" placeholder="(75) 9 0000-0000"></div>
+          <div class="fmg"><label class="flb">E-mail</label><input class="fi" id="s-email" placeholder="email@ex.com"></div>
+        </div>
+        <div class="g2">
+          <div class="fmg"><label class="flb">Consumo Médio (kWh/mês)</label><input class="fi" id="s-kwh" type="number" value="300" oninput="simCalc()"></div>
+          <div class="fmg"><label class="flb">Tarifa Energia (R$/kWh)</label><input class="fi" id="s-tarifa" type="number" value="0.92" step="0.01" oninput="simCalc()"></div>
+        </div>
+        <div class="g2">
+          <div class="fmg"><label class="flb">Concessionária</label><input class="fi" id="s-conc" value="Coelba"></div>
+          <div class="fmg"><label class="flb">Tipo de Cliente</label><select class="fs" id="s-tipo"><option>Residencial</option><option>Comercial</option><option>Rural</option></select></div>
+        </div>
       </div>
-      <div class="g2">
-        <div class="fmg"><label class="flb">Consumo Médio (kWh/mês) *</label><input class="fi" id="s-kwh" type="number" value="300" oninput="simCalc()"></div>
-        <div class="fmg"><label class="flb">Tipo de Cliente</label><select class="fs" id="s-tipo"><option>Residencial</option><option>Comercial</option><option>Rural</option></select></div>
+
+      <!-- Kit Solar -->
+      <div class="card">
+        <div class="sec-t" style="margin-bottom:14px">☀ Kit Solar (Fornecedor)</div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Módulos Fotovoltaicos</div>
+        <div class="g2">
+          <div class="fmg"><label class="flb">Quantidade de Painéis *</label><input class="fi" id="s-qtd-pai" type="number" placeholder="Ex: 8" oninput="simCalc()"></div>
+          <div class="fmg"><label class="flb">Potência por Painel (Wp) *</label><input class="fi" id="s-wp-pai" type="number" placeholder="Ex: 620" oninput="simCalc()"></div>
+        </div>
+        <div class="fmg"><label class="flb">Marca dos Painéis</label><input class="fi" id="s-marca-pai" placeholder="Ex: Leapton, Canadian, Risen..."></div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin:12px 0 8px;text-transform:uppercase;letter-spacing:.5px">Inversores</div>
+        <div class="g2">
+          <div class="fmg"><label class="flb">Quantidade de Inversores *</label><input class="fi" id="s-qtd-inv" type="number" placeholder="Ex: 1" oninput="simCalc()"></div>
+          <div class="fmg"><label class="flb">Potência por Inversor (kW)</label><input class="fi" id="s-kw-inv" type="number" placeholder="Ex: 5" step="0.01" oninput="simCalc()"></div>
+        </div>
+        <div class="fmg"><label class="flb">Marca dos Inversores</label><input class="fi" id="s-marca-inv" placeholder="Ex: Growatt, Fronius, Solis..."></div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin:12px 0 8px;text-transform:uppercase;letter-spacing:.5px">Custo do Kit</div>
+        <div class="fmg"><label class="flb">Valor do Kit no Fornecedor (R$) *</label><input class="fi" id="s-kit" type="number" placeholder="Ex: 8500.00" step="0.01" oninput="simCalc()"></div>
       </div>
-      <div class="g2">
-        <div class="fmg"><label class="flb">Tarifa (R$/kWh)</label><input class="fi" id="s-tarifa" type="number" value="0.92" step="0.01" oninput="simCalc()"></div>
-        <div class="fmg"><label class="flb">Margem (%)</label><input class="fi" id="s-margem" type="number" value="30" oninput="simCalc()"></div>
+
+      <!-- Logística -->
+      <div class="card">
+        <div class="sec-t" style="margin-bottom:14px">🚗 Logística</div>
+        <div class="fmg">
+          <label class="flb">Distância até a obra — somente ida (km)</label>
+          <input class="fi" id="s-km" type="number" placeholder="Ex: 30" oninput="simCalc()">
+          <div style="font-size:11px;color:var(--tx2);margin-top:4px">O sistema calcula ida + volta automaticamente (× R$ 1,50/km)</div>
+        </div>
       </div>
-      <div class="fmg"><label class="flb">Concessionária</label><input class="fi" id="s-conc" value="Coelba"></div>
-      <div style="display:flex;gap:10px;margin-top:6px">
+
+      <!-- Botões -->
+      <div style="display:flex;gap:10px">
         <button class="btn bp" style="flex:1;justify-content:center" onclick="addLeadFromSim()">+ Criar Lead no CRM</button>
         <button class="btn bo" style="flex:1;justify-content:center" onclick="gerarPropostaPDF()">📄 Gerar Proposta PDF</button>
       </div>
     </div>
-    <div class="card">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)">
-        <div style="width:34px;height:34px;background:var(--am3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">📊</div>
-        <div><div style="font-weight:700;font-size:14px">Resultado da Simulação</div><div style="font-size:11px;color:var(--tx2)">Dimensionamento calculado automaticamente</div></div>
-      </div>
-      <div class="ri">
-        <div class="rc"><div class="rl">☀ Potência</div><div class="rv" id="r-pot">—</div></div>
-        <div class="rc"><div class="rl">⚡ Geração/mês</div><div class="rv" id="r-gen">—</div></div>
-        <div class="rc"><div class="rl">▦ Painéis</div><div class="rv" id="r-pai">—</div></div>
-        <div class="rc"><div class="rl">📐 Área</div><div class="rv" id="r-area">—</div></div>
-        <div class="rc"><div class="rl">💰 Eco. Mensal</div><div class="rv" id="r-eco">—</div></div>
-        <div class="rc"><div class="rl">📈 Eco. Anual</div><div class="rv" id="r-ecoa">—</div></div>
-      </div>
-      <div style="background:var(--am3);border-radius:10px;padding:14px;margin-bottom:12px">
-        <div style="font-size:11px;color:#854d0e;font-weight:600;margin-bottom:5px">💵 Investimento Total</div>
-        <div style="font-size:24px;font-weight:700;color:var(--az)" id="r-inv">—</div>
-        <div style="display:flex;gap:20px;margin-top:8px">
-          <div><div style="font-size:10px;color:var(--tx2)">⏱ Payback</div><div style="font-weight:700;font-size:14px;color:var(--or)" id="r-pb">—</div></div>
-          <div><div style="font-size:10px;color:var(--tx2)">📈 ROI 25 anos</div><div style="font-weight:700;font-size:14px;color:var(--vd)" id="r-roi">—</div></div>
-          <div><div style="font-size:10px;color:var(--tx2)">📊 TIR Mensal</div><div style="font-weight:700;font-size:14px;color:var(--az)" id="r-tir">—</div></div>
+
+    <!-- COLUNA DIREITA: RESULTADO -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Sistema calculado -->
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--bd)">
+          <div style="width:34px;height:34px;background:var(--am3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">⚡</div>
+          <div><div style="font-weight:700;font-size:14px">Sistema Dimensionado</div><div style="font-size:11px;color:var(--tx2)">Calculado com base no kit informado</div></div>
+        </div>
+        <div class="ri">
+          <div class="rc"><div class="rl">☀ Potência Total</div><div class="rv" id="r-pot">—</div></div>
+          <div class="rc"><div class="rl">▦ Painéis</div><div class="rv" id="r-pai">—</div></div>
+          <div class="rc"><div class="rl">⚡ Geração/mês</div><div class="rv" id="r-gen">—</div></div>
+          <div class="rc"><div class="rl">📐 Área Estimada</div><div class="rv" id="r-area">—</div></div>
+          <div class="rc"><div class="rl">💰 Eco. Mensal</div><div class="rv" id="r-eco">—</div></div>
+          <div class="rc"><div class="rl">📈 Eco. Anual</div><div class="rv" id="r-ecoa">—</div></div>
         </div>
       </div>
-      <div style="background:var(--bg);border-radius:8px;padding:12px;font-size:12px;color:var(--tx2)">
-        📋 <b>Fio B (Lei 14.300/2022):</b> Desconto de 100% no 1º ano, reduzindo 20%/ano até o 6º ano.<br>
-        O payback e ROI já consideram o encargo progressivo da Coelba.
+
+      <!-- Detalhamento de custos -->
+      <div class="card">
+        <div style="font-weight:700;font-size:13px;color:var(--az);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--am)">💰 Detalhamento de Custos</div>
+        <div id="r-custos">
+          <div style="text-align:center;color:var(--tx2);padding:16px;font-size:13px">Preencha os dados do kit para ver o detalhamento</div>
+        </div>
       </div>
+
+      <!-- Preço de Venda -->
+      <div class="card" style="background:linear-gradient(135deg,#11104e 0%,#1e1a7a 100%);border:none">
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);font-weight:600;margin-bottom:6px">💵 PREÇO DE VENDA SUGERIDO</div>
+        <div style="font-size:32px;font-weight:700;color:var(--am)" id="r-inv">—</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px">
+          <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:10px">
+            <div style="font-size:10px;color:rgba(255,255,255,0.6)">⏱ Payback</div>
+            <div style="font-weight:700;font-size:14px;color:#fbbf24" id="r-pb">—</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:10px">
+            <div style="font-size:10px;color:rgba(255,255,255,0.6)">📈 ROI 25 anos</div>
+            <div style="font-weight:700;font-size:14px;color:#34d399" id="r-roi">—</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:10px">
+            <div style="font-size:10px;color:rgba(255,255,255,0.6)">📊 TIR Mensal</div>
+            <div style="font-weight:700;font-size:14px;color:#a78bfa" id="r-tir">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fio B info -->
+      <div style="background:#fff;border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:12px;color:var(--tx2)">
+        📋 <b style="color:var(--az)">Fio B – Lei 14.300/2022:</b> Desconto de 100% no 1º ano, reduzindo 20%/ano até o 6º ano. O payback e ROI já consideram o encargo progressivo da Coelba (R$ 0,26/kWh).
+      </div>
+
     </div>
   </div>
 </div>
@@ -420,42 +486,100 @@ function brl(v){ return 'R$ '+parseFloat(v||0).toLocaleString('pt-BR',{minimumFr
 
 // ── SIMULADOR ─────────────────────────────────────────────────────────────
 function simCalc(){
-  const kwh=parseFloat(document.getElementById('s-kwh').value)||300;
-  const tar=parseFloat(document.getElementById('s-tarifa').value)||0.92;
-  const mg=(parseFloat(document.getElementById('s-margem').value)||30)/100;
-  const fator=cfg.fator||4.5;
-  const custoKwp=cfg.custo_kwp||2620;
-  const pot_real=kwh/(fator*30);
-  const pai=Math.ceil(pot_real/0.62);
-  const pot=parseFloat((pai*0.62).toFixed(2));
-  const gen=parseFloat((pot*fator*30).toFixed(0));
-  const area=parseFloat((pai*2.2).toFixed(1));
-  const eco=parseFloat((gen*tar).toFixed(2));
-  const custo=parseFloat((pot*custoKwp).toFixed(2));
-  const inv=parseFloat((custo/(1-mg)).toFixed(2));
-  const pb=parseFloat((inv/eco).toFixed(1));
-  const roi=parseFloat((eco*12*25-inv).toFixed(0));
-  // TIR mensal (Newton-Raphson simplificado)
-  const fluxo=[-inv,...Array(300).fill(eco)];
-  let r=0.01;
+  // Dados do kit
+  const qtdPai  = parseInt(document.getElementById('s-qtd-pai').value)||0;
+  const wpPai   = parseFloat(document.getElementById('s-wp-pai').value)||0;
+  const qtdInv  = parseInt(document.getElementById('s-qtd-inv').value)||0;
+  const kwInv   = parseFloat(document.getElementById('s-kw-inv').value)||0;
+  const kitVal  = parseFloat(document.getElementById('s-kit').value)||0;
+  const km      = parseFloat(document.getElementById('s-km').value)||0;
+  const kwh     = parseFloat(document.getElementById('s-kwh').value)||0;
+  const tar     = parseFloat(document.getElementById('s-tarifa').value)||(cfg.tarifa||0.92);
+  const fator   = cfg.fator||4.5;
+
+  // Sistema
+  const pot   = parseFloat((qtdPai * wpPai / 1000).toFixed(2));      // kWp
+  const gen   = parseFloat((pot * fator * 30).toFixed(0));            // kWh/mês
+  const area  = parseFloat((qtdPai * 2.2).toFixed(1));               // m²
+
+  // ── CUSTOS DIRETOS ──────────────────────────────────────────────────
+  const cKit        = kitVal;                                          // Kit fornecedor
+  const cInstalacao = qtdPai * 100;                                   // R$ 100/painel
+  const cMaterial   = parseFloat((kitVal * 0.06).toFixed(2));        // 6% do kit
+  const cART        = 70;                                              // Fixo
+  const cCombust    = parseFloat((km * 1.5 * 2).toFixed(2));         // ida+volta
+
+  const custoDireto = cKit + cInstalacao + cMaterial + cART + cCombust;
+
+  // ── PREÇO DE VENDA ──────────────────────────────────────────────────
+  // Margem 30% + Marketing 5% + Imposto 6% = 41% sobre venda
+  // Custo Direto = Preço × 0,59  →  Preço = Custo ÷ 0,59
+  const MARGEM    = 0.30;
+  const MARKETING = 0.05;
+  const IMPOSTO   = 0.06;
+  const DIVISOR   = 1 - MARGEM - MARKETING - IMPOSTO; // 0.59
+
+  const inv        = DIVISOR > 0 ? parseFloat((custoDireto / DIVISOR).toFixed(2)) : 0;
+  const vMarketing = parseFloat((inv * MARKETING).toFixed(2));
+  const vImposto   = parseFloat((inv * IMPOSTO).toFixed(2));
+  const vMargem    = parseFloat((inv * MARGEM).toFixed(2));
+
+  // ── ANÁLISE FINANCEIRA ──────────────────────────────────────────────
+  const eco   = parseFloat((gen * tar).toFixed(2));                   // economia mensal
+  const pb    = eco > 0 ? parseFloat((inv / eco).toFixed(1)) : 0;   // payback meses
+  const roi   = parseFloat((eco * 12 * 25 - inv).toFixed(0));       // ROI 25 anos
+
+  // TIR mensal (Newton-Raphson)
+  const fluxo = [-inv, ...Array(300).fill(eco)];
+  let r = 0.01;
   for(let i=0;i<500;i++){
-    let pv=fluxo.reduce((a,c,t)=>a+c/Math.pow(1+r,t),0);
-    let dpv=fluxo.reduce((a,c,t)=>a-t*c/Math.pow(1+r,t+1),0);
-    if(Math.abs(dpv)<1e-10)break;
-    r-=pv/dpv;
+    let pv  = fluxo.reduce((a,c,t)=>a+c/Math.pow(1+r,t),0);
+    let dpv = fluxo.reduce((a,c,t)=>a-t*c/Math.pow(1+r,t+1),0);
+    if(Math.abs(dpv)<1e-10) break;
+    r -= pv/dpv;
   }
-  const tir=parseFloat((r*100).toFixed(2));
-  document.getElementById('r-pot').textContent=pot.toFixed(2)+' kWp';
-  document.getElementById('r-gen').textContent=gen+' kWh/mês';
-  document.getElementById('r-pai').textContent=pai+' un.';
-  document.getElementById('r-area').textContent=area+' m²';
-  document.getElementById('r-eco').textContent=brl(eco);
-  document.getElementById('r-ecoa').textContent=brl(eco*12);
-  document.getElementById('r-inv').textContent=brl(inv);
-  document.getElementById('r-pb').textContent=pb+' meses';
-  document.getElementById('r-roi').textContent=brl(roi);
-  document.getElementById('r-tir').textContent=tir+'% a.m.';
-  return {kwh,tar,mg,pot,pai,gen,area,eco,inv,pb,roi,tir};
+  const tir = parseFloat((r*100).toFixed(2));
+
+  // ── ATUALIZAR UI ────────────────────────────────────────────────────
+  document.getElementById('r-pot').textContent  = pot > 0 ? pot.toFixed(2)+' kWp' : '—';
+  document.getElementById('r-pai').textContent  = qtdPai > 0 ? qtdPai+' un.' : '—';
+  document.getElementById('r-gen').textContent  = gen > 0 ? gen+' kWh/mês' : '—';
+  document.getElementById('r-area').textContent = area > 0 ? area+' m²' : '—';
+  document.getElementById('r-eco').textContent  = eco > 0 ? brl(eco) : '—';
+  document.getElementById('r-ecoa').textContent = eco > 0 ? brl(eco*12) : '—';
+  document.getElementById('r-inv').textContent  = inv > 0 ? brl(inv) : '—';
+  document.getElementById('r-pb').textContent   = pb > 0 ? pb+' meses' : '—';
+  document.getElementById('r-roi').textContent  = roi !== 0 ? brl(roi) : '—';
+  document.getElementById('r-tir').textContent  = tir > 0 ? tir+'% a.m.' : '—';
+
+  // Detalhamento de custos
+  const detEl = document.getElementById('r-custos');
+  if(kitVal > 0){
+    const rows = [
+      ['Kit Solar (fornecedor)',     brl(cKit),        ''],
+      ['Instalação ('+qtdPai+' painéis × R$ 100)', brl(cInstalacao), ''],
+      ['Material Elétrico (6% kit)', brl(cMaterial),   ''],
+      ['ART / Documentação',         brl(cART),         ''],
+      ['Combustível ('+km+'km × 2 × R$1,50)', brl(cCombust), ''],
+      ['<b>Custo Direto</b>',        '<b>'+brl(custoDireto)+'</b>', ''],
+      ['Marketing (5% venda)',        brl(vMarketing),  'var(--or)'],
+      ['Imposto – absorvido (6%)',    brl(vImposto),    'var(--vm)'],
+      ['<b>Margem Líquida (30%)</b>', '<b style="color:var(--vd)">'+brl(vMargem)+'</b>', 'var(--vd)'],
+    ];
+    detEl.innerHTML = rows.map((r,i)=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px;${i===5?'background:var(--bg);margin:0 -4px;padding:7px 4px;border-radius:4px;':''}">
+        <span style="color:${i===5||i===8?'var(--az)':'var(--tx2)'}">${r[0]}</span>
+        <span style="color:${r[2]||'var(--az)'}">${r[1]}</span>
+      </div>`).join('');
+  } else {
+    detEl.innerHTML='<div style="text-align:center;color:var(--tx2);padding:16px;font-size:13px">Preencha o kit para ver o detalhamento</div>';
+  }
+
+  return {kwh,tar,pot,qtdPai,gen,area,eco,inv,pb,roi,tir,
+          kitVal,cInstalacao,cMaterial,cART,cCombust,custoDireto,
+          vMarketing,vImposto,vMargem,
+          marcaPai:document.getElementById('s-marca-pai').value,
+          wpPai,qtdInv,kwInv,marcaInv:document.getElementById('s-marca-inv').value};
 }
 
 async function addLeadFromSim(){
@@ -463,12 +587,13 @@ async function addLeadFromSim(){
   const nome=document.getElementById('s-nome').value.trim();
   const cidade=document.getElementById('s-cidade').value.trim();
   if(!nome){showNotif('sim-notif','⚠️ Preencha o nome do cliente!',false);return;}
-  const lead={nome,cidade,tel:document.getElementById('s-tel').value,email:document.getElementById('s-email').value,kwh:d.kwh,obs:'Gerado pelo Simulador Solar',estagio:0,inv:d.inv,data:new Date().toLocaleDateString('pt-BR')};
+  if(!d.kitVal){showNotif('sim-notif','⚠️ Preencha o valor do kit no fornecedor!',false);return;}
+  const obs=`Kit: ${d.qtdPai}x ${d.marcaPai} ${d.wpPai}Wp | ${d.qtdInv}x Inversor ${d.marcaInv} ${d.kwInv}kW`;
+  const lead={nome,cidade,tel:document.getElementById('s-tel').value,email:document.getElementById('s-email').value,kwh:d.kwh,obs,estagio:0,inv:d.inv,data:new Date().toLocaleDateString('pt-BR')};
   const {data,error}=await db.from('leads').insert(lead).select();
   if(error){showNotif('sim-notif','❌ Erro ao criar lead: '+error.message,false);return;}
   leads.unshift(data[0]);
-  // criar proposta
-  const prop={nome,cidade,kwh:d.kwh,pot:d.pot,pai:d.pai,eco:d.eco,inv:d.inv,pb:d.pb,roi:d.roi,status:'Pendente',data:new Date().toLocaleDateString('pt-BR')};
+  const prop={nome,cidade,kwh:d.kwh,pot:d.pot,pai:d.qtdPai,eco:d.eco,inv:d.inv,pb:d.pb,roi:d.roi,status:'Pendente',data:new Date().toLocaleDateString('pt-BR')};
   const {data:pd}=await db.from('propostas').insert(prop).select();
   if(pd) propostas.unshift(pd[0]);
   showNotif('sim-notif','✅ Lead e proposta criados com sucesso!');
