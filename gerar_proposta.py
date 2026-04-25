@@ -15,7 +15,13 @@ from reportlab.lib.utils import ImageReader
 from pypdf import PdfWriter, PdfReader
 
 W, H = A4
-TEMPLATE = os.path.join(os.path.dirname(__file__), "template.pdf")
+# Tenta encontrar template.pdf no diretório do arquivo ou no cwd
+_dir = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE = os.path.join(_dir, "template.pdf")
+if not os.path.exists(TEMPLATE):
+    TEMPLATE = os.path.join(os.getcwd(), "template.pdf")
+if not os.path.exists(TEMPLATE):
+    raise FileNotFoundError(f"template.pdf não encontrado. Buscado em: {_dir} e {os.getcwd()}")
 
 # Fonte Carlito (substituta Montserrat)
 pdfmetrics.registerFont(TTFont("Mont",     "/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf"))
