@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolarCRM – Solutare Energia Solar</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--az:#11104e;--am:#fcdb00;--am2:#e6c600;--bg:#f5f5f2;--card:#fff;--bd:#e5e5e0;--tx:#1a1a2e;--tx2:#666;--vd:#166534;--vd2:#dcfce7;--vm:#991b1b;--vm2:#fee2e2;--or:#c2410c;--or2:#ffedd5;--am3:#fefce8}
+html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:14px}
+.app{display:flex;height:100vh;overflow:hidden}
+/* SIDEBAR */
+.sb{width:220px;background:var(--az);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-top{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.sb-brand{display:flex;align-items:center;gap:10px}
+.sb-sun{width:36px;height:36px;background:var(--am);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sb-name{color:#fff;font-weight:700;font-size:15px;line-height:1.1}
+.sb-sub{color:rgba(255,255,255,0.5);font-size:10px;margin-top:2px}
+.sb-nav{flex:1;padding:10px 0}
+.ni{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:rgba(255,255,255,0.65);font-size:13px;font-weight:500;border-left:3px solid transparent;transition:all .15s;user-select:none}
+.ni:hover{background:rgba(255,255,255,0.08);color:#fff}
+.ni.on{background:rgba(252,219,0,0.15);color:var(--am);border-left-color:var(--am)}
+.ni-ic{width:18px;text-align:center;font-size:15px}
+.sb-ft{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.1);font-size:10px;color:rgba(255,255,255,0.35)}
+/* MAIN */
+.main{flex:1;overflow-y:auto;background:var(--bg)}
+.pg{padding:24px;display:none;max-width:1100px}
+.pg.on{display:block}
+.ph{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between}
+.ph-l .pt{font-size:22px;font-weight:700;color:var(--az)}
+.ph-l .ps{font-size:13px;color:var(--tx2);margin-top:3px}
+/* BOTÕES */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit;white-space:nowrap}
+.bp{background:var(--am);color:var(--az)}.bp:hover{background:var(--am2)}
+.bo{background:#fff;border:1px solid var(--bd);color:var(--tx)}.bo:hover{background:var(--bg)}
+.bv{background:var(--vd2);color:var(--vd);border:1px solid #86efac}
+.bd2{background:var(--vm2);color:var(--vm);border:1px solid #fca5a5}
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:20px}
+/* GRID */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* KPI */
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px}
+.kl{font-size:11px;color:var(--tx2);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.kv{font-size:22px;font-weight:700;color:var(--az);line-height:1}
+.ks{font-size:11px;color:var(--tx2);margin-top:4px}
+.kdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* BADGE */
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:600}
+.bg{background:var(--vd2);color:var(--vd)}
+.by{background:var(--am3);color:#854d0e}
+.br{background:var(--vm2);color:var(--vm)}
+.bb{background:#dbeafe;color:#1e40af}
+.bo2{background:var(--or2);color:var(--or)}
+.bp2{background:#f3e8ff;color:#6b21a8}
+/* TABELA */
+.tb{background:#fff;border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{background:var(--az);color:#fff;font-size:12px;font-weight:600;padding:11px 14px;text-align:left;white-space:nowrap}
+td{padding:11px 14px;font-size:13px;border-bottom:1px solid var(--bd);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf9}
+/* FORM */
+.fmg{margin-bottom:14px}
+.flb{display:block;font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:5px}
+.fi{width:100%;padding:8px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;background:#fff;color:var(--tx);outline:none;font-family:inherit;transition:border .15s}
+.fi:focus{border-color:var(--az);box-shadow:0 0 0 3px rgba(17,16,78,0.07)}
+.fs{width:100%;padding:8px 12px;border:1px solid var(--bd);border-radius:8px;font-size:13px;background:#fff;color:var(--tx);outline:none;cursor:pointer;font-family:inherit}
+/* KANBAN */
+.kan{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kc{background:#f0f0ea;border:1px solid var(--bd);border-radius:10px;padding:12px;min-height:320px}
+.kch{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.kct{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.kcc{background:#e5e7eb;color:#374151;font-size:11px;padding:2px 7px;border-radius:99px;font-weight:600}
+.kcard{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:8px;cursor:pointer;transition:box-shadow .15s}
+.kcard:hover{box-shadow:0 2px 10px rgba(0,0,0,0.10)}
+.kcn{font-weight:700;font-size:13px;margin-bottom:4px;color:var(--az)}
+.kci{font-size:11px;color:var(--tx2);margin-top:2px}
+/* SIMULADOR */
+.sim{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.ri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.rc{background:var(--bg);border-radius:8px;padding:12px}
+.rl{font-size:10px;color:var(--tx2);margin-bottom:4px}
+.rv{font-size:15px;font-weight:700;color:var(--az)}
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal.on{display:flex}
+.mbox{background:#fff;border-radius:14px;padding:24px;width:480px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.mt{font-size:16px;font-weight:700;color:var(--az);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--bd)}
+.mft{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--bd)}
+/* INFO ROW */
+.ir{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.ir:last-child{border:none}
+.ik{color:var(--tx2)}
+.iv{font-weight:600;color:var(--az)}
+/* NOTIF */
+.notif{padding:11px 16px;border-radius:8px;font-size:13px;font-weight:500;margin-bottom:14px;display:none;align-items:center;gap:8px}
+.notif.on{display:flex}
+.notif-ok{background:var(--vd2);color:var(--vd)}
+.notif-err{background:var(--vm2);color:var(--vm)}
+/* CONFIG */
+.cfg-sec{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:20px;margin-bottom:16px}
+.cfg-t{font-size:14px;font-weight:700;color:var(--az);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+/* PBAR */
+.pbar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.pbar-l{font-size:11px;color:var(--tx2);width:100px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbar-bg{flex:1;height:20px;background:#f0f0ea;border-radius:4px;overflow:hidden}
+.pbar-f{height:100%;border-radius:4px;background:var(--am);transition:width .6s}
+.pbar-v{font-size:11px;font-weight:700;color:var(--az);min-width:65px}
+/* PROP CARD */
+.prop-card{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.prop-ic{width:40px;height:40px;background:var(--am3);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.prop-info{flex:1}
+.prop-nome{font-weight:700;font-size:14px;color:var(--az)}
+.prop-det{font-size:11px;color:var(--tx2);margin-top:3px}
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--tx2)}
+.spinner{width:32px;height:32px;border:3px solid var(--bd);border-top-color:var(--az);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* EMPTY */
+.empty{text-align:center;padding:40px}
+.empty-ic{font-size:36px;opacity:.3;margin-bottom:12px}
+.empty-t{font-weight:600;font-size:15px;margin-bottom:6px}
+.empty-s{color:var(--tx2);font-size:13px}
+/* SEC TITLE */
+.sec-t{font-size:14px;font-weight:700;color:var(--az);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--am)}
+@media(max-width:900px){
+  .sb{width:60px}.sb-name,.sb-sub,.ni span:last-child,.sb-ft{display:none}
+  .ni{justify-content:center;padding:12px}.g4{grid-template-columns:1fr 1fr}.kan{grid-template-columns:1fr 1fr}.sim{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="sb-top">
+    <div class="sb-brand">
+      <div class="sb-sun">☀</div>
+      <div><div class="sb-name">SolarCRM</div><div class="sb-sub">Solutare Energia Solar</div></div>
+    </div>
+  </div>
+  <div class="sb-nav">
+    <div class="ni on" onclick="nav('dash',this)"><span class="ni-ic">▦</span><span>Dashboard</span></div>
+    <div class="ni" onclick="nav('crm',this)"><span class="ni-ic">⟳</span><span>CRM</span></div>
+    <div class="ni" onclick="nav('cli',this)"><span class="ni-ic">👤</span><span>Clientes</span></div>
+    <div class="ni" onclick="nav('sim',this)"><span class="ni-ic">⚡</span><span>Simulador Solar</span></div>
+    <div class="ni" onclick="nav('prop',this)"><span class="ni-ic">📄</span><span>Propostas</span></div>
+    <div class="ni" onclick="nav('obras',this)"><span class="ni-ic">🔧</span><span>Controle de Obras</span></div>
+    <div class="ni" onclick="nav('cfg',this)"><span class="ni-ic">⚙</span><span>Configurações</span></div>
+  </div>
+  <div class="sb-ft">© 2026 Solutare</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="pg on" id="pg-dash">
+  <div class="ph"><div class="ph-l"><div class="pt">Dashboard</div><div class="ps">Visão geral do seu negócio solar</div></div></div>
+  <div class="g4" style="margin-bottom:18px">
+    <div class="kpi"><div class="kl"><span class="kdot" style="background:#3b82f6"></span>Total de Leads</div><div class="kv" id="d-leads">—</div><div class="ks">cadastrados</div></div>
+    <div class="kpi"><div class="kl"><span class="kdot" style="background:#f59e0b"></span>Taxa de Conversão</div><div class="kv" id="d-conv">—</div><div class="ks">leads fechados</div></div>
+    <div class="kpi"><div class="kl"><span class="kdot" style="background:#10b981"></span>Receita Prevista</div><div class="kv" id="d-rec">—</div><div class="ks">propostas ativas</div></div>
+    <div class="kpi"><div class="kl"><span class="kdot" style="background:var(--am)"></span>kWp Vendidos</div><div class="kv" id="d-kwp">—</div><div class="ks">sistemas aprovados</div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="sec-t">Receita por Obra</div><div id="d-chart"><div class="loading"><div class="spinner"></div>Carregando...</div></div></div>
+    <div class="card"><div class="sec-t">Leads Recentes</div><div id="d-lr"><div class="loading"><div class="spinner"></div>Carregando...</div></div></div>
+  </div>
+</div>
+
+<!-- CRM -->
+<div class="pg" id="pg-crm">
+  <div class="ph">
+    <div class="ph-l"><div class="pt">CRM</div><div class="ps">Gerencie seu pipeline de vendas</div></div>
+    <button class="btn bp" onclick="openModal('m-lead')">+ Novo Lead</button>
+  </div>
+  <div id="crm-notif" class="notif notif-ok">✅ Lead salvo com sucesso!</div>
+  <div class="kan">
+    <div class="kc"><div class="kch"><div class="kct"><span style="color:#3b82f6">●</span>Novo Lead</div><span class="kcc" id="cnt-0">0</span></div><div id="col-0"></div></div>
+    <div class="kc"><div class="kch"><div class="kct"><span style="color:#f59e0b">●</span>Em Contato</div><span class="kcc" id="cnt-1">0</span></div><div id="col-1"></div></div>
+    <div class="kc"><div class="kch"><div class="kct"><span style="color:#8b5cf6">●</span>Proposta Enviada</div><span class="kcc" id="cnt-2">0</span></div><div id="col-2"></div></div>
+    <div class="kc"><div class="kch"><div class="kct"><span style="color:#10b981">●</span>Fechado</div><span class="kcc" id="cnt-3">0</span></div><div id="col-3"></div></div>
+  </div>
+</div>
+
+<!-- CLIENTES -->
+<div class="pg" id="pg-cli">
+  <div class="ph"><div class="ph-l"><div class="pt">Clientes</div><div class="ps" id="cli-sub">Clientes fechados no CRM</div></div></div>
+  <div id="cli-content"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+</div>
+
+<!-- SIMULADOR -->
+<div class="pg" id="pg-sim">
+  <div class="ph"><div class="ph-l"><div class="pt">Simulador Solar</div><div class="ps">Preencha os dados do kit e do cliente — a precificação é calculada automaticamente</div></div></div>
+  <div id="sim-notif" class="notif notif-ok"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <!-- COLUNA ESQUERDA: FORMULÁRIO -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Dados do Cliente -->
+      <div class="card">
+        <div class="sec-t" style="margin-bottom:14px">👤 Dados do Cliente</div>
+        <div class="fmg"><label class="flb">Nome do Cliente *</label><input class="fi" id="s-nome" placeholder="Ex: João Silva"></div>
+        <div class="fmg"><label class="flb">Cidade *</label><input class="fi" id="s-cidade" placeholder="Ex: Salvador – BA"></div>
+        <div class="g2">
+          <div class="fmg"><label class="flb">Telefone</label><input class="fi" id="s-tel" placeholder="(75) 9 0000-0000"></div>
+          <div class="fmg"><label class="flb">E-mail</label><input class="fi" id="s-email" placeholder="email@ex.com"></div>
+        </div>
+        <div class="g2">
+          <div class="fmg"><label class="flb">Consumo Médio (kWh/mês)</label><input class="fi" id="s-kwh" type="number" value="300" oninput="simCalc()"></div>
+          <div class="fmg"><label class="flb">Tarifa Energia (R$/kWh)</label><input class="fi" id="s-tarifa" type="number" value="0.92" step="0.01" oninput="simCalc()"></div>
+        </div>
+        <div class="g2">
+          <div class="fmg"><label class="flb">Concessionária</label><input class="fi" id="s-conc" value="Coelba"></div>
+          <div class="fmg"><label class="flb">Tipo de Cliente</label><select class="fs" id="s-tipo"><option>Residencial</option><option>Comercial</option><option>Rural</option></select></div>
+        </div>
+      </div>
+
+      <!-- Kit Solar -->
+      <div class="card">
+        <div class="sec-t" style="margin-bottom:14px">☀ Kit Solar (Fornecedor)</div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Módulos Fotovoltaicos</div>
+        <div class="g2">
+          <div class="fmg"><label class="flb">Quantidade de Painéis *</label><input class="fi" id="s-qtd-pai" type="number" placeholder="Ex: 8" oninput="simCalc()"></div>
+          <div class="fmg"><label class="flb">Potência por Painel (Wp) *</label><input class="fi" id="s-wp-pai" type="number" placeholder="Ex: 620" oninput="simCalc()"></div>
+        </div>
+        <div class="fmg"><label class="flb">Marca dos Painéis</label><input class="fi" id="s-marca-pai" placeholder="Ex: Leapton, Canadian, Risen..."></div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin:12px 0 8px;text-transform:uppercase;letter-spacing:.5px">Inversores</div>
+        <div class="g2">
+          <div class="fmg"><label class="flb">Quantidade de Inversores *</label><input class="fi" id="s-qtd-inv" type="number" placeholder="Ex: 1" oninput="simCalc()"></div>
+          <div class="fmg"><label class="flb">Potência por Inversor (kW)</label><input class="fi" id="s-kw-inv" type="number" placeholder="Ex: 5" step="0.01" oninput="simCalc()"></div>
+        </div>
+        <div class="fmg"><label class="flb">Marca dos Inversores</label><input class="fi" id="s-marca-inv" placeholder="Ex: Growatt, Fronius, Solis..."></div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--tx2);margin:12px 0 8px;text-transform:uppercase;letter-spacing:.5px">Custo do Kit</div>
+        <div class="fmg"><label class="flb">Valor do Kit no Fornecedor (R$) *</label><input class="fi" id="s-kit" type="number" placeholder="Ex: 8500.00" step="0.01" oninput="simCalc()"></div>
+      </div>
+
+      <!-- Logística -->
+      <div class="card">
+        <div class="sec-t" style="margin-bottom:14px">🚗 Logística</div>
+        <div class="fmg">
+          <label class="flb">Distância até a obra — somente ida (km)</label>
+          <input class="fi" id="s-km" type="number" placeholder="Ex: 30" oninput="simCalc()">
+          <div style="font-size:11px;color:var(--tx2);margin-top:4px">O sistema calcula ida + volta automaticamente (× R$ 1,50/km)</div>
+        </div>
+      </div>
+
+      <!-- Botões -->
+      <div style="display:flex;gap:10px">
+        <button class="btn bp" style="flex:1;justify-content:center" onclick="addLeadFromSim()">+ Criar Lead no CRM</button>
+        <button class="btn bo" style="flex:1;justify-content:center" onclick="gerarPropostaPDF()">📄 Gerar Proposta PDF</button>
+      </div>
+    </div>
+
+    <!-- COLUNA DIREITA: RESULTADO -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Sistema calculado -->
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--bd)">
+          <div style="width:34px;height:34px;background:var(--am3);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">⚡</div>
+          <div><div style="font-weight:700;font-size:14px">Sistema Dimensionado</div><div style="font-size:11px;color:var(--tx2)">Calculado com base no kit informado</div></div>
+        </div>
+        <div class="ri">
+          <div class="rc"><div class="rl">☀ Potência Total</div><div class="rv" id="r-pot">—</div></div>
+          <div class="rc"><div class="rl">▦ Painéis</div><div class="rv" id="r-pai">—</div></div>
+          <div class="rc"><div class="rl">⚡ Geração/mês</div><div class="rv" id="r-gen">—</div></div>
+          <div class="rc"><div class="rl">📐 Área Estimada</div><div class="rv" id="r-area">—</div></div>
+          <div class="rc"><div class="rl">💰 Eco. Mensal</div><div class="rv" id="r-eco">—</div></div>
+          <div class="rc"><div class="rl">📈 Eco. Anual</div><div class="rv" id="r-ecoa">—</div></div>
+        </div>
+      </div>
+
+      <!-- Detalhamento de custos -->
+      <div class="card">
+        <div style="font-weight:700;font-size:13px;color:var(--az);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--am)">💰 Detalhamento de Custos</div>
+        <div id="r-custos">
+          <div style="text-align:center;color:var(--tx2);padding:16px;font-size:13px">Preencha os dados do kit para ver o detalhamento</div>
+        </div>
+      </div>
+
+      <!-- Preço de Venda -->
+      <div class="card" style="background:linear-gradient(135deg,#11104e 0%,#1e1a7a 100%);border:none">
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);font-weight:600;margin-bottom:6px">💵 PREÇO DE VENDA SUGERIDO</div>
+        <div style="font-size:32px;font-weight:700;color:var(--am)" id="r-inv">—</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px">
+          <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:10px">
+            <div style="font-size:10px;color:rgba(255,255,255,0.6)">⏱ Payback</div>
+            <div style="font-weight:700;font-size:14px;color:#fbbf24" id="r-pb">—</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:10px">
+            <div style="font-size:10px;color:rgba(255,255,255,0.6)">📈 ROI 25 anos</div>
+            <div style="font-weight:700;font-size:14px;color:#34d399" id="r-roi">—</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:10px">
+            <div style="font-size:10px;color:rgba(255,255,255,0.6)">📊 TIR Mensal</div>
+            <div style="font-weight:700;font-size:14px;color:#a78bfa" id="r-tir">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fio B info -->
+      <div style="background:#fff;border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:12px;color:var(--tx2)">
+        📋 <b style="color:var(--az)">Fio B – Lei 14.300/2022:</b> Desconto de 100% no 1º ano, reduzindo 20%/ano até o 6º ano. O payback e ROI já consideram o encargo progressivo da Coelba (R$ 0,26/kWh).
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- PROPOSTAS -->
+<div class="pg" id="pg-prop">
+  <div class="ph"><div class="ph-l"><div class="pt">Propostas</div><div class="ps" id="prop-sub">Histórico de propostas geradas</div></div></div>
+  <div id="prop-content"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+</div>
+
+<!-- OBRAS -->
+<div class="pg" id="pg-obras">
+  <div class="ph">
+    <div class="ph-l"><div class="pt">Controle de Obras</div><div class="ps">Gerencie custos e lucros por obra</div></div>
+    <button class="btn bp" onclick="openModal('m-obra')">+ Nova Obra</button>
+  </div>
+  <div id="obras-notif" class="notif notif-ok">✅ Obra registrada com sucesso!</div>
+  <div class="g4" style="margin-bottom:18px">
+    <div class="kpi"><div class="kl"><span class="kdot" style="background:#3b82f6"></span>Total Faturado</div><div class="kv" id="o-fat">—</div></div>
+    <div class="kpi"><div class="kl"><span class="kdot" style="background:#10b981"></span>Total Lucro</div><div class="kv" id="o-luc">—</div></div>
+    <div class="kpi"><div class="kl"><span class="kdot" style="background:var(--am)"></span>Margem Média</div><div class="kv" id="o-mg">—</div></div>
+    <div class="kpi"><div class="kl"><span class="kdot" style="background:#8b5cf6"></span>Obras</div><div class="kv" id="o-qt">—</div></div>
+  </div>
+  <div id="obras-content"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+</div>
+
+<!-- CONFIGURAÇÕES -->
+<div class="pg" id="pg-cfg">
+  <div class="ph"><div class="ph-l"><div class="pt">Configurações</div><div class="ps">Dados da empresa e parâmetros do sistema</div></div></div>
+  <div id="cfg-notif" class="notif notif-ok">✅ Configurações salvas com sucesso!</div>
+  <div class="cfg-sec">
+    <div class="cfg-t">🏢 Dados da Empresa</div>
+    <div class="g2">
+      <div class="fmg"><label class="flb">Nome Fantasia *</label><input class="fi" id="c-nome" value="Solutare Energia Solar"></div>
+      <div class="fmg"><label class="flb">CNPJ</label><input class="fi" id="c-cnpj" value="15.096.067/0001-49"></div>
+    </div>
+    <div class="g2">
+      <div class="fmg"><label class="flb">Telefone / WhatsApp</label><input class="fi" id="c-tel" value="75 99891180"></div>
+      <div class="fmg"><label class="flb">E-mail</label><input class="fi" id="c-email" value="solutarerolar@hotmail.com"></div>
+    </div>
+    <div class="fmg"><label class="flb">Endereço</label><input class="fi" id="c-end" placeholder="Rua, número, cidade – BA"></div>
+  </div>
+  <div class="cfg-sec">
+    <div class="cfg-t">💰 Parâmetros Financeiros</div>
+    <div class="g2">
+      <div class="fmg"><label class="flb">Margem Padrão (%)</label><input class="fi" id="c-mg" type="number" value="30"></div>
+      <div class="fmg"><label class="flb">Custo por kWp (R$)</label><input class="fi" id="c-kwp" type="number" value="2620"></div>
+    </div>
+    <div class="g2">
+      <div class="fmg"><label class="flb">Tarifa Coelba (R$/kWh)</label><input class="fi" id="c-tar" type="number" value="0.92" step="0.01"></div>
+      <div class="fmg"><label class="flb">Fator de Geração (kWh/kWp/dia)</label><input class="fi" id="c-fator" type="number" value="4.5" step="0.1"></div>
+    </div>
+  </div>
+  <div class="cfg-sec">
+    <div class="cfg-t">🎨 Personalização</div>
+    <div class="g2">
+      <div class="fmg"><label class="flb">Cor Primária</label><div style="display:flex;gap:8px;align-items:center"><input type="color" value="#11104e" id="c-cor1" style="width:42px;height:36px;border:1px solid var(--bd);border-radius:7px;cursor:pointer;padding:2px"><input class="fi" value="#11104e" id="c-cor1t" style="flex:1"></div></div>
+      <div class="fmg"><label class="flb">Cor Secundária</label><div style="display:flex;gap:8px;align-items:center"><input type="color" value="#fcdb00" id="c-cor2" style="width:42px;height:36px;border:1px solid var(--bd);border-radius:7px;cursor:pointer;padding:2px"><input class="fi" value="#fcdb00" id="c-cor2t" style="flex:1"></div></div>
+    </div>
+  </div>
+  <button class="btn bp" onclick="saveCfg()">💾 Salvar Configurações</button>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAIS -->
+<!-- Modal Lead -->
+<div class="modal" id="m-lead">
+<div class="mbox">
+  <div class="mt">➕ Novo Lead</div>
+  <div class="g2">
+    <div class="fmg"><label class="flb">Nome *</label><input class="fi" id="l-nome" placeholder="Nome do cliente"></div>
+    <div class="fmg"><label class="flb">Cidade *</label><input class="fi" id="l-cidade" placeholder="Ex: Salvador"></div>
+  </div>
+  <div class="g2">
+    <div class="fmg"><label class="flb">Telefone</label><input class="fi" id="l-tel" placeholder="(75) 9 0000-0000"></div>
+    <div class="fmg"><label class="flb">E-mail</label><input class="fi" id="l-email" placeholder="email@exemplo.com"></div>
+  </div>
+  <div class="g2">
+    <div class="fmg"><label class="flb">Consumo Médio (kWh/mês)</label><input class="fi" id="l-kwh" type="number" placeholder="Ex: 300"></div>
+    <div class="fmg"><label class="flb">Estágio</label><select class="fs" id="l-estagio"><option value="0">Novo Lead</option><option value="1">Em Contato</option><option value="2">Proposta Enviada</option><option value="3">Fechado</option></select></div>
+  </div>
+  <div class="fmg"><label class="flb">Observações</label><input class="fi" id="l-obs" placeholder="Notas sobre o lead"></div>
+  <div class="mft">
+    <button class="btn bo" onclick="closeModal('m-lead')">Cancelar</button>
+    <button class="btn bp" onclick="addLead()">💾 Salvar Lead</button>
+  </div>
+</div></div>
+
+<!-- Modal Detalhe Lead -->
+<div class="modal" id="m-det">
+<div class="mbox">
+  <div class="mt" id="det-titulo">Detalhes do Lead</div>
+  <div id="det-body"></div>
+  <div style="margin-top:14px"><label class="flb">Mover para estágio:</label>
+    <select class="fs" id="det-estagio"><option value="0">Novo Lead</option><option value="1">Em Contato</option><option value="2">Proposta Enviada</option><option value="3">Fechado</option></select>
+  </div>
+  <div class="mft">
+    <button class="btn bd2" onclick="deleteLead()">🗑 Excluir</button>
+    <button class="btn bo" onclick="closeModal('m-det')">Fechar</button>
+    <button class="btn bp" onclick="moveStage()">✔ Salvar</button>
+  </div>
+</div></div>
+
+<!-- Modal Obra -->
+<div class="modal" id="m-obra">
+<div class="mbox">
+  <div class="mt">🔧 Registrar Obra</div>
+  <div class="g2">
+    <div class="fmg"><label class="flb">Cliente *</label><input class="fi" id="ob-cli" placeholder="Nome do cliente"></div>
+    <div class="fmg"><label class="flb">Valor Faturado (R$) *</label><input class="fi" id="ob-fat" type="number" placeholder="Ex: 12000"></div>
+  </div>
+  <div class="sec-t" style="margin:4px 0 12px">Custos da Obra</div>
+  <div class="g2">
+    <div class="fmg"><label class="flb">Equipamento (R$)</label><input class="fi" id="ob-eq" type="number" placeholder="0"></div>
+    <div class="fmg"><label class="flb">Instalação (R$)</label><input class="fi" id="ob-inst" type="number" placeholder="0"></div>
+  </div>
+  <div class="g2">
+    <div class="fmg"><label class="flb">Material Elétrico (R$)</label><input class="fi" id="ob-mat" type="number" placeholder="0"></div>
+    <div class="fmg"><label class="flb">ART + Documentação (R$)</label><input class="fi" id="ob-art" type="number" value="70"></div>
+  </div>
+  <div class="g2">
+    <div class="fmg"><label class="flb">Combustível (R$)</label><input class="fi" id="ob-comb" type="number" placeholder="0"></div>
+    <div class="fmg"><label class="flb">Outros (R$)</label><input class="fi" id="ob-out" type="number" placeholder="0"></div>
+  </div>
+  <div class="g2">
+    <div class="fmg"><label class="flb">Nº de Placas</label><input class="fi" id="ob-plac" type="number" placeholder="Ex: 8"></div>
+    <div class="fmg"><label class="flb">Status Pagamento</label><select class="fs" id="ob-st"><option>✅ Recebido</option><option>⏳ Aguardando</option><option>❌ Pendente</option></select></div>
+  </div>
+  <div class="mft">
+    <button class="btn bo" onclick="closeModal('m-obra')">Cancelar</button>
+    <button class="btn bp" onclick="addObra()">💾 Registrar</button>
+  </div>
+</div></div>
+
+<script>
+// ── SUPABASE ──────────────────────────────────────────────────────────────
+const SUPA_URL = 'https://wknqeywmtvfnpfgxatbl.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrbnFleXdtdHZmbnBmZ3hhdGJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTc2ODUsImV4cCI6MjA5MjYzMzY4NX0._vphmOk5Xg-2Z1fb6ECO6HJebe_-kh4TBsB1unBt4Cg';
+const { createClient } = supabase;
+const db = createClient(SUPA_URL, SUPA_KEY);
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let leads=[], propostas=[], obras=[], cfg={margem:30,custo_kwp:2620,tarifa:0.92,fator:4.5};
+let curLeadId=null;
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function nav(p, el){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.querySelectorAll('.pg').forEach(g=>g.classList.remove('on'));
+  if(el) el.classList.add('on');
+  document.getElementById('pg-'+p).classList.add('on');
+  if(p==='dash') renderDash();
+  if(p==='crm')  renderKanban();
+  if(p==='cli')  renderCli();
+  if(p==='prop') renderProp();
+  if(p==='obras') renderObras();
+  if(p==='cfg')  loadCfg();
+}
+function openModal(id){ document.getElementById(id).classList.add('on'); }
+function closeModal(id){ document.getElementById(id).classList.remove('on'); }
+function showNotif(id, msg, ok=true){
+  const el=document.getElementById(id);
+  el.className='notif '+(ok?'notif-ok':'notif-err')+' on';
+  el.textContent=msg;
+  setTimeout(()=>el.classList.remove('on'),3500);
+}
+function brl(v){ return 'R$ '+parseFloat(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// ── SIMULADOR ─────────────────────────────────────────────────────────────
+function simCalc(){
+  // Dados do kit
+  const qtdPai  = parseInt(document.getElementById('s-qtd-pai').value)||0;
+  const wpPai   = parseFloat(document.getElementById('s-wp-pai').value)||0;
+  const qtdInv  = parseInt(document.getElementById('s-qtd-inv').value)||0;
+  const kwInv   = parseFloat(document.getElementById('s-kw-inv').value)||0;
+  const kitVal  = parseFloat(document.getElementById('s-kit').value)||0;
+  const km      = parseFloat(document.getElementById('s-km').value)||0;
+  const kwh     = parseFloat(document.getElementById('s-kwh').value)||0;
+  const tar     = parseFloat(document.getElementById('s-tarifa').value)||(cfg.tarifa||0.92);
+  const fator   = cfg.fator||4.5;
+
+  // Sistema
+  const pot   = parseFloat((qtdPai * wpPai / 1000).toFixed(2));      // kWp
+  const gen   = parseFloat((pot * fator * 30).toFixed(0));            // kWh/mês
+  const area  = parseFloat((qtdPai * 2.2).toFixed(1));               // m²
+
+  // ── CUSTOS DIRETOS ──────────────────────────────────────────────────
+  const cKit        = kitVal;                                          // Kit fornecedor
+  const cInstalacao = qtdPai * 100;                                   // R$ 100/painel
+  const cMaterial   = parseFloat((kitVal * 0.06).toFixed(2));        // 6% do kit
+  const cART        = 70;                                              // Fixo
+  const cCombust    = parseFloat((km * 1.5 * 2).toFixed(2));         // ida+volta
+
+  const custoDireto = cKit + cInstalacao + cMaterial + cART + cCombust;
+
+  // ── PREÇO DE VENDA ──────────────────────────────────────────────────
+  // Margem 30% + Marketing 5% + Imposto 6% = 41% sobre venda
+  // Custo Direto = Preço × 0,59  →  Preço = Custo ÷ 0,59
+  const MARGEM    = 0.30;
+  const MARKETING = 0.05;
+  const IMPOSTO   = 0.06;
+  const DIVISOR   = 1 - MARGEM - MARKETING - IMPOSTO; // 0.59
+
+  const inv        = DIVISOR > 0 ? parseFloat((custoDireto / DIVISOR).toFixed(2)) : 0;
+  const vMarketing = parseFloat((inv * MARKETING).toFixed(2));
+  const vImposto   = parseFloat((inv * IMPOSTO).toFixed(2));
+  const vMargem    = parseFloat((inv * MARGEM).toFixed(2));
+
+  // ── ANÁLISE FINANCEIRA ──────────────────────────────────────────────
+  const eco   = parseFloat((gen * tar).toFixed(2));                   // economia mensal
+  const pb    = eco > 0 ? parseFloat((inv / eco).toFixed(1)) : 0;   // payback meses
+  const roi   = parseFloat((eco * 12 * 25 - inv).toFixed(0));       // ROI 25 anos
+
+  // TIR mensal (Newton-Raphson)
+  const fluxo = [-inv, ...Array(300).fill(eco)];
+  let r = 0.01;
+  for(let i=0;i<500;i++){
+    let pv  = fluxo.reduce((a,c,t)=>a+c/Math.pow(1+r,t),0);
+    let dpv = fluxo.reduce((a,c,t)=>a-t*c/Math.pow(1+r,t+1),0);
+    if(Math.abs(dpv)<1e-10) break;
+    r -= pv/dpv;
+  }
+  const tir = parseFloat((r*100).toFixed(2));
+
+  // ── ATUALIZAR UI ────────────────────────────────────────────────────
+  document.getElementById('r-pot').textContent  = pot > 0 ? pot.toFixed(2)+' kWp' : '—';
+  document.getElementById('r-pai').textContent  = qtdPai > 0 ? qtdPai+' un.' : '—';
+  document.getElementById('r-gen').textContent  = gen > 0 ? gen+' kWh/mês' : '—';
+  document.getElementById('r-area').textContent = area > 0 ? area+' m²' : '—';
+  document.getElementById('r-eco').textContent  = eco > 0 ? brl(eco) : '—';
+  document.getElementById('r-ecoa').textContent = eco > 0 ? brl(eco*12) : '—';
+  document.getElementById('r-inv').textContent  = inv > 0 ? brl(inv) : '—';
+  document.getElementById('r-pb').textContent   = pb > 0 ? pb+' meses' : '—';
+  document.getElementById('r-roi').textContent  = roi !== 0 ? brl(roi) : '—';
+  document.getElementById('r-tir').textContent  = tir > 0 ? tir+'% a.m.' : '—';
+
+  // Detalhamento de custos
+  const detEl = document.getElementById('r-custos');
+  if(kitVal > 0){
+    const rows = [
+      ['Kit Solar (fornecedor)',     brl(cKit),        ''],
+      ['Instalação ('+qtdPai+' painéis × R$ 100)', brl(cInstalacao), ''],
+      ['Material Elétrico (6% kit)', brl(cMaterial),   ''],
+      ['ART / Documentação',         brl(cART),         ''],
+      ['Combustível ('+km+'km × 2 × R$1,50)', brl(cCombust), ''],
+      ['<b>Custo Direto</b>',        '<b>'+brl(custoDireto)+'</b>', ''],
+      ['Marketing (5% venda)',        brl(vMarketing),  'var(--or)'],
+      ['Imposto – absorvido (6%)',    brl(vImposto),    'var(--vm)'],
+      ['<b>Margem Líquida (30%)</b>', '<b style="color:var(--vd)">'+brl(vMargem)+'</b>', 'var(--vd)'],
+    ];
+    detEl.innerHTML = rows.map((r,i)=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px;${i===5?'background:var(--bg);margin:0 -4px;padding:7px 4px;border-radius:4px;':''}">
+        <span style="color:${i===5||i===8?'var(--az)':'var(--tx2)'}">${r[0]}</span>
+        <span style="color:${r[2]||'var(--az)'}">${r[1]}</span>
+      </div>`).join('');
+  } else {
+    detEl.innerHTML='<div style="text-align:center;color:var(--tx2);padding:16px;font-size:13px">Preencha o kit para ver o detalhamento</div>';
+  }
+
+  return {kwh,tar,pot,qtdPai,gen,area,eco,inv,pb,roi,tir,
+          kitVal,cInstalacao,cMaterial,cART,cCombust,custoDireto,
+          vMarketing,vImposto,vMargem,
+          marcaPai:document.getElementById('s-marca-pai').value,
+          wpPai,qtdInv,kwInv,marcaInv:document.getElementById('s-marca-inv').value};
+}
+
+async function addLeadFromSim(){
+  const d=simCalc();
+  const nome=document.getElementById('s-nome').value.trim();
+  const cidade=document.getElementById('s-cidade').value.trim();
+  if(!nome){showNotif('sim-notif','⚠️ Preencha o nome do cliente!',false);return;}
+  if(!d.kitVal){showNotif('sim-notif','⚠️ Preencha o valor do kit no fornecedor!',false);return;}
+  const obs=`Kit: ${d.qtdPai}x ${d.marcaPai} ${d.wpPai}Wp | ${d.qtdInv}x Inversor ${d.marcaInv} ${d.kwInv}kW`;
+  const lead={nome,cidade,tel:document.getElementById('s-tel').value,email:document.getElementById('s-email').value,kwh:d.kwh,obs,estagio:0,inv:d.inv,data:new Date().toLocaleDateString('pt-BR')};
+  const {data,error}=await db.from('leads').insert(lead).select();
+  if(error){showNotif('sim-notif','❌ Erro ao criar lead: '+error.message,false);return;}
+  leads.unshift(data[0]);
+  const prop={nome,cidade,kwh:d.kwh,pot:d.pot,pai:d.qtdPai,eco:d.eco,inv:d.inv,pb:d.pb,roi:d.roi,status:'Pendente',data:new Date().toLocaleDateString('pt-BR')};
+  const {data:pd}=await db.from('propostas').insert(prop).select();
+  if(pd) propostas.unshift(pd[0]);
+  showNotif('sim-notif','✅ Lead e proposta criados com sucesso!');
+  renderDash();
+}
+
+async function gerarPropostaPDF(){
+  const d = simCalc();
+  const nome   = document.getElementById('s-nome').value.trim();
+  const cidade = document.getElementById('s-cidade').value.trim();
+
+  if(!nome){ showNotif('sim-notif','⚠️ Preencha o nome do cliente!',false); return; }
+  if(!d.kitVal){ showNotif('sim-notif','⚠️ Preencha o valor do kit no fornecedor!',false); return; }
+
+  showNotif('sim-notif','⏳ Gerando proposta PDF...', true);
+
+  const payload = {
+    nome,
+    cidade,
+    kwh:       d.kwh,
+    qtd_pai:   d.qtdPai,
+    wp_pai:    d.wpPai,
+    marca_pai: document.getElementById('s-marca-pai').value || 'Painel',
+    qtd_inv:   d.qtdInv,
+    kw_inv:    d.kwInv,
+    marca_inv: document.getElementById('s-marca-inv').value || 'Inversor',
+    tipo_inv:  'Inversor',
+    inv:       d.inv,
+    tarifa:    parseFloat(document.getElementById('s-tarifa').value) || 0.92,
+  };
+
+  try {
+    const resp = await fetch('/gerar-proposta', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+
+    if(!resp.ok){
+      const err = await resp.json();
+      showNotif('sim-notif', '❌ Erro ao gerar PDF: ' + (err.detail || resp.statusText), false);
+      return;
+    }
+
+    const blob = await resp.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `Proposta_${nome.replace(/\s/g,'_')}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showNotif('sim-notif', '✅ Proposta gerada e baixada com sucesso!', true);
+  } catch(e) {
+    showNotif('sim-notif', '❌ Erro de conexão: ' + e.message, false);
+  }
+}
+  leads=data||[];
+  renderKanban();renderDash();
+}
+
+function renderKanban(){
+  for(let i=0;i<4;i++){document.getElementById('col-'+i).innerHTML='';document.getElementById('cnt-'+i).textContent=0;}
+  leads.forEach(l=>{
+    const col=document.getElementById('col-'+l.estagio);
+    const cnt=document.getElementById('cnt-'+l.estagio);
+    cnt.textContent=parseInt(cnt.textContent)+1;
+    const d=document.createElement('div');d.className='kcard';
+    d.innerHTML=`<div class="kcn">${l.nome}</div><div class="kci">${l.cidade||'—'} · ${l.kwh?l.kwh+' kWh/mês':''}</div><div class="kci" style="margin-top:3px">${l.data||''}</div>`;
+    d.onclick=()=>openLeadDet(l.id);
+    col.appendChild(d);
+  });
+}
+
+function openLeadDet(id){
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  curLeadId=id;
+  document.getElementById('det-titulo').textContent='👤 '+l.nome;
+  document.getElementById('det-estagio').value=l.estagio;
+  document.getElementById('det-body').innerHTML=`
+    <div class="ir"><span class="ik">Cidade</span><span class="iv">${l.cidade||'—'}</span></div>
+    <div class="ir"><span class="ik">Telefone</span><span class="iv">${l.tel||'—'}</span></div>
+    <div class="ir"><span class="ik">E-mail</span><span class="iv">${l.email||'—'}</span></div>
+    <div class="ir"><span class="ik">Consumo</span><span class="iv">${l.kwh?l.kwh+' kWh/mês':'—'}</span></div>
+    <div class="ir"><span class="ik">Investimento</span><span class="iv">${l.inv?brl(l.inv):'—'}</span></div>
+    <div class="ir"><span class="ik">Cadastrado</span><span class="iv">${l.data||'—'}</span></div>
+    <div class="ir"><span class="ik">Observações</span><span class="iv">${l.obs||'—'}</span></div>`;
+  openModal('m-det');
+}
+
+async function addLead(){
+  const nome=document.getElementById('l-nome').value.trim();
+  const cidade=document.getElementById('l-cidade').value.trim();
+  if(!nome){alert('Preencha o nome!');return;}
+  const est=parseInt(document.getElementById('l-estagio').value);
+  const lead={nome,cidade,tel:document.getElementById('l-tel').value,email:document.getElementById('l-email').value,kwh:parseFloat(document.getElementById('l-kwh').value)||0,obs:document.getElementById('l-obs').value,estagio:est,inv:0,data:new Date().toLocaleDateString('pt-BR')};
+  const {data,error}=await db.from('leads').insert(lead).select();
+  if(error){alert('Erro: '+error.message);return;}
+  leads.unshift(data[0]);
+  if(est===3) await autoCreateObra(data[0]);
+  closeModal('m-lead');
+  ['l-nome','l-cidade','l-tel','l-email','l-kwh','l-obs'].forEach(id=>document.getElementById(id).value='');
+  showNotif('crm-notif','✅ Lead salvo com sucesso!');
+  renderKanban();renderDash();
+}
+
+async function moveStage(){
+  if(!curLeadId)return;
+  const est=parseInt(document.getElementById('det-estagio').value);
+  const {error}=await db.from('leads').update({estagio:est}).eq('id',curLeadId);
+  if(error){alert('Erro: '+error.message);return;}
+  const l=leads.find(x=>x.id===curLeadId);
+  if(l){l.estagio=est;if(est===3)await autoCreateObra(l);}
+  closeModal('m-det');
+  showNotif('crm-notif','✅ Lead atualizado!');
+  renderKanban();renderDash();
+}
+
+async function deleteLead(){
+  if(!curLeadId)return;
+  if(!confirm('Excluir este lead?'))return;
+  await db.from('leads').delete().eq('id',curLeadId);
+  leads=leads.filter(x=>x.id!==curLeadId);
+  curLeadId=null;
+  closeModal('m-det');
+  renderKanban();renderDash();
+}
+
+// ── OBRAS ─────────────────────────────────────────────────────────────────
+async function loadObras(){
+  const {data}=await db.from('obras').select('*').order('created_at',{ascending:false});
+  obras=data||[];renderObras();
+}
+
+async function addObra(){
+  const nome=document.getElementById('ob-cli').value.trim();
+  const fat=parseFloat(document.getElementById('ob-fat').value)||0;
+  if(!nome||!fat){alert('Preencha cliente e valor faturado!');return;}
+  const eq=parseFloat(document.getElementById('ob-eq').value)||0;
+  const inst=parseFloat(document.getElementById('ob-inst').value)||0;
+  const mat=parseFloat(document.getElementById('ob-mat').value)||0;
+  const art=parseFloat(document.getElementById('ob-art').value)||70;
+  const comb=parseFloat(document.getElementById('ob-comb').value)||0;
+  const out_outros=parseFloat(document.getElementById('ob-out').value)||0;
+  const custo=eq+inst+mat+art+comb+out_outros;
+  const lucro=fat-custo;
+  const margem=fat>0?(lucro/fat)*100:0;
+  const plac=parseInt(document.getElementById('ob-plac').value)||0;
+  const status=document.getElementById('ob-st').value;
+  const obra={nome,fat,eq,inst,mat,art,comb,out_outros,custo,lucro,margem,plac,status,data:new Date().toLocaleDateString('pt-BR')};
+  const {data,error}=await db.from('obras').insert(obra).select();
+  if(error){alert('Erro: '+error.message);return;}
+  obras.unshift(data[0]);
+  closeModal('m-obra');
+  ['ob-cli','ob-fat','ob-eq','ob-inst','ob-mat','ob-comb','ob-out','ob-plac'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ob-art').value='70';
+  showNotif('obras-notif','✅ Obra registrada com sucesso!');
+  renderObras();renderDash();
+}
+
+async function autoCreateObra(l){
+  const exist=obras.find(o=>o.nome===l.nome);if(exist)return;
+  const obra={nome:l.nome,cidade:l.cidade||'',fat:l.inv||0,eq:0,inst:0,mat:0,art:70,comb:0,out_outros:0,custo:70,lucro:(l.inv||0)-70,margem:l.inv>0?(((l.inv||0)-70)/l.inv)*100:0,plac:0,status:'⏳ Aguardando',data:new Date().toLocaleDateString('pt-BR')};
+  const {data}=await db.from('obras').insert(obra).select();
+  if(data){obras.unshift(data[0]);renderObras();}
+}
+
+async function deleteObra(id){
+  if(!confirm('Excluir esta obra?'))return;
+  await db.from('obras').delete().eq('id',id);
+  obras=obras.filter(o=>o.id!==id);renderObras();renderDash();
+}
+
+function renderObras(){
+  const tf=obras.reduce((a,o)=>a+(o.fat||0),0);
+  const tl=obras.reduce((a,o)=>a+(o.lucro||0),0);
+  document.getElementById('o-fat').textContent=brl(tf);
+  document.getElementById('o-luc').textContent=brl(tl);
+  document.getElementById('o-mg').textContent=tf>0?((tl/tf)*100).toFixed(1)+'%':'0%';
+  document.getElementById('o-qt').textContent=obras.length;
+  const cont=document.getElementById('obras-content');
+  if(obras.length===0){cont.innerHTML='<div class="card empty"><div class="empty-ic">🔧</div><div class="empty-t">Nenhuma obra registrada</div><div class="empty-s">Clique em "+ Nova Obra" ou feche um lead no CRM</div></div>';return;}
+  cont.innerHTML=`<div class="tb"><table><thead><tr><th>Cliente</th><th>Faturado</th><th>Custo Total</th><th>Lucro</th><th>Margem</th><th>Status Pgto</th><th>Data</th><th></th></tr></thead><tbody>${obras.map(o=>{
+    const mc=o.margem>=25?'bg':o.margem>=15?'by':'br';
+    return `<tr><td><b>${o.nome}</b></td><td>${brl(o.fat)}</td><td>${brl(o.custo)}</td><td style="color:${o.lucro>=0?'var(--vd)':'var(--vm)'}"><b>${brl(o.lucro)}</b></td><td><span class="badge ${mc}">${o.margem.toFixed(1)}%</span></td><td>${o.status}</td><td>${o.data||'—'}</td><td><button class="btn bd2" onclick="deleteObra(${o.id})" style="padding:4px 8px;font-size:11px">🗑</button></td></tr>`;
+  }).join('')}</tbody></table></div>`;
+}
+
+// ── CLIENTES ──────────────────────────────────────────────────────────────
+function renderCli(){
+  const fechados=leads.filter(l=>l.estagio===3);
+  document.getElementById('cli-sub').textContent=fechados.length+' clientes cadastrados';
+  const cont=document.getElementById('cli-content');
+  if(fechados.length===0){cont.innerHTML='<div class="card empty"><div class="empty-ic">👥</div><div class="empty-t">Nenhum cliente cadastrado</div><div class="empty-s">Clientes são criados automaticamente ao fechar um lead no CRM</div></div>';return;}
+  cont.innerHTML=`<div class="tb"><table><thead><tr><th>Cliente</th><th>Cidade</th><th>Consumo</th><th>Investimento</th><th>Data</th><th>Status</th></tr></thead><tbody>${fechados.map(l=>`<tr><td><b>${l.nome}</b></td><td>${l.cidade||'—'}</td><td>${l.kwh?l.kwh+' kWh/mês':'—'}</td><td>${l.inv?brl(l.inv):'—'}</td><td>${l.data||'—'}</td><td><span class="badge bg">✅ Ativo</span></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+// ── PROPOSTAS ─────────────────────────────────────────────────────────────
+async function loadPropostas(){
+  const {data}=await db.from('propostas').select('*').order('created_at',{ascending:false});
+  propostas=data||[];renderProp();
+}
+
+async function deleteProp(id){
+  if(!confirm('Excluir esta proposta?'))return;
+  await db.from('propostas').delete().eq('id',id);
+  propostas=propostas.filter(p=>p.id!==id);renderProp();
+}
+
+async function updatePropStatus(id,v){
+  await db.from('propostas').update({status:v}).eq('id',id);
+  const p=propostas.find(x=>x.id===id);if(p)p.status=v;
+}
+
+function renderProp(){
+  const n=propostas.length;
+  document.getElementById('prop-sub').textContent=n+' proposta'+(n!==1?'s':'')+' gerada'+(n!==1?'s':'');
+  const cont=document.getElementById('prop-content');
+  if(n===0){cont.innerHTML='<div class="card empty"><div class="empty-ic">📄</div><div class="empty-t">Nenhuma proposta gerada</div><div class="empty-s">Use o Simulador Solar para gerar propostas automaticamente</div></div>';return;}
+  cont.innerHTML=propostas.map(p=>{
+    const sc={'Aceita':'bg','Pendente':'by','Recusada':'br'}[p.status]||'by';
+    return `<div class="prop-card"><div class="prop-ic">☀</div><div class="prop-info"><div class="prop-nome">${p.nome}</div><div class="prop-det">${(p.pot||0).toFixed(2)} kWp · ${brl(p.inv)} · Payback: ${(p.pb||0).toFixed(1)} meses · ${p.data||'—'}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="badge ${sc}">${p.status}</span><select class="fs" style="width:120px;font-size:11px" onchange="updatePropStatus(${p.id},this.value)"><option ${p.status==='Pendente'?'selected':''}>Pendente</option><option ${p.status==='Aceita'?'selected':''}>Aceita</option><option ${p.status==='Recusada'?'selected':''}>Recusada</option></select><button class="btn bd2" onclick="deleteProp(${p.id})" style="padding:5px 10px;font-size:11px">🗑</button></div></div>`;
+  }).join('');
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────
+function renderDash(){
+  const total=leads.length;
+  const fech=leads.filter(l=>l.estagio===3).length;
+  const rec=propostas.filter(p=>p.status!=='Recusada').reduce((a,p)=>a+(p.inv||0),0);
+  const kwp=propostas.filter(p=>p.status==='Aceita').reduce((a,p)=>a+(p.pot||0),0);
+  document.getElementById('d-leads').textContent=total;
+  document.getElementById('d-conv').textContent=total>0?((fech/total)*100).toFixed(1)+'%':'0,0%';
+  document.getElementById('d-rec').textContent=brl(rec);
+  document.getElementById('d-kwp').textContent=kwp.toFixed(2)+' kWp';
+  // chart
+  const chart=document.getElementById('d-chart');
+  if(obras.length===0){chart.innerHTML='<div style="text-align:center;color:var(--tx2);padding:20px 0;font-size:13px">Nenhuma obra registrada</div>';} else {
+    const maxFat=Math.max(...obras.map(o=>o.fat));
+    chart.innerHTML=obras.slice(0,6).map(o=>`<div class="pbar-row"><div class="pbar-l">${o.nome.length>12?o.nome.substr(0,12)+'…':o.nome}</div><div class="pbar-bg"><div class="pbar-f" style="width:${maxFat>0?(o.fat/maxFat*100).toFixed(0):0}%"></div></div><div class="pbar-v">${brl(o.fat)}</div></div>`).join('');
+  }
+  // leads recentes
+  const lr=document.getElementById('d-lr');
+  if(leads.length===0){lr.innerHTML='<div style="text-align:center;color:var(--tx2);padding:20px 0;font-size:13px">Nenhum lead ainda</div>';}else{
+    const lbls=['Novo','Em Contato','Proposta','Fechado'];
+    const bcs=['bb','by','bp2','bg'];
+    lr.innerHTML=leads.slice(0,5).map(l=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)"><div><div style="font-weight:600;font-size:13px">${l.nome}</div><div style="font-size:11px;color:var(--tx2)">${l.cidade||'—'} · ${l.data||''}</div></div><span class="badge ${bcs[l.estagio]}">${lbls[l.estagio]}</span></div>`).join('');
+  }
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────────────
+async function loadCfg(){
+  const {data}=await db.from('config').select('*').eq('id',1).single();
+  if(data){
+    cfg=data;
+    document.getElementById('c-nome').value=data.nome||'';
+    document.getElementById('c-cnpj').value=data.cnpj||'';
+    document.getElementById('c-tel').value=data.tel||'';
+    document.getElementById('c-email').value=data.email||'';
+    document.getElementById('c-end').value=data.endereco||'';
+    document.getElementById('c-mg').value=data.margem||30;
+    document.getElementById('c-kwp').value=data.custo_kwp||2620;
+    document.getElementById('c-tar').value=data.tarifa||0.92;
+    document.getElementById('c-fator').value=data.fator||4.5;
+    document.getElementById('c-cor1').value=data.cor1||'#11104e';
+    document.getElementById('c-cor1t').value=data.cor1||'#11104e';
+    document.getElementById('c-cor2').value=data.cor2||'#fcdb00';
+    document.getElementById('c-cor2t').value=data.cor2||'#fcdb00';
+  }
+}
+
+async function saveCfg(){
+  const d={nome:document.getElementById('c-nome').value,cnpj:document.getElementById('c-cnpj').value,tel:document.getElementById('c-tel').value,email:document.getElementById('c-email').value,endereco:document.getElementById('c-end').value,margem:parseFloat(document.getElementById('c-mg').value)||30,custo_kwp:parseFloat(document.getElementById('c-kwp').value)||2620,tarifa:parseFloat(document.getElementById('c-tar').value)||0.92,fator:parseFloat(document.getElementById('c-fator').value)||4.5,cor1:document.getElementById('c-cor1').value,cor2:document.getElementById('c-cor2').value};
+  const {error}=await db.from('config').upsert({id:1,...d});
+  if(error){showNotif('cfg-notif','❌ Erro ao salvar: '+error.message,false);return;}
+  cfg={...cfg,...d};
+  showNotif('cfg-notif','✅ Configurações salvas com sucesso!');
+  // Atualizar simulador com novos valores
+  document.getElementById('s-tarifa').value=cfg.tarifa;
+  document.getElementById('s-margem').value=cfg.margem;
+  simCalc();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+async function init(){
+  await loadCfg();
+  document.getElementById('s-tarifa').value=cfg.tarifa||0.92;
+  document.getElementById('s-margem').value=cfg.margem||30;
+  simCalc();
+  await Promise.all([loadLeads(),loadObras(),loadPropostas()]);
+  renderDash();
+}
+init();
+</script>
+</body>
+</html>
